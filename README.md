@@ -1,14 +1,6 @@
-<img src="./pga_logo.png" width="100" height="100" />
+## Kyle Peacock's Leaderboard Example
 
-## PGA RECRUITING - REACT LEADERBOARD PROJECT
-
-The purpose of this project is to give candidates the opportunity to showcase their skills using React, JavaScript, and overall Application Development.
-
-## Overview
-
-The application that candidates must complete will be a simple, generic score leaderboard, letting its users display, add, remove, and edit players.
-
-Candidates should write clean, declarative, and functional code and abide by good design principles.
+This project was an experiment with using test-driven development to create a highly-tested React project over the course of an evening. 
 
 ## Requirements
 
@@ -28,12 +20,3 @@ Candidates should write clean, declarative, and functional code and abide by goo
 | Junge, John   | 96    | Delete |
 | Vera, Rob     | 88    | Delete |
 
-## Submitting the project
- * Candidate should create a new repo for this project on their own GitHub account
- * Complete application
- * Deploy application to a production environment
- * Notify PGA contact that repo is ready for review, providing both URLs to the repo and running app
-
-## Bonus
-
-It's encouraged that candidates add additional and reasonable features to the leaderboard to contribute to its function. Similarly, candidates should feel free to include more advanced programming techniques and concepts of their particular interests.
