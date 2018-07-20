@@ -8,7 +8,11 @@ Enzyme.configure({
 import App from "./App";
 import Scoreboard from "./Scoreboard";
 
-describe("general requirements", () => {
+const sessionStorage = {
+  get: () => ""
+};
+
+describe("general app requirements", () => {
   it("Must be written in react", () => {
     // Verify the React component can be mounted
     const wrapper = shallow(<App />);
@@ -26,7 +30,7 @@ describe("general requirements", () => {
   });
   it("should render a scoreboard", () => {
     const wrapper = shallow(<App />);
-    expect(wrapper.contains(<Scoreboard />)).toEqual(true);
+    expect(wrapper.containsMatchingElement(<Scoreboard />)).toEqual(true);
   });
 });
 
@@ -58,6 +62,7 @@ describe("form features", () => {
 
   describe("actions", () => {
     it("should update the state when it submits", () => {});
+    it("should delete a user when requested", () => {});
   });
 
   // In a real-world scenario, we would have an integration test
