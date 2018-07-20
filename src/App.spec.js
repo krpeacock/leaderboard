@@ -5,12 +5,30 @@ Enzyme.configure({
   adapter: new Adapter()
 });
 
-import App from "./App";
+import App, { sortPlayers } from "./App";
 import Scoreboard from "./Scoreboard";
-
+import samplePlayers from "./Scoreboard.spec";
 const sessionStorage = {
   get: () => ""
 };
+
+const samplePlayers = [
+  {
+    firstName: "John",
+    lastName: "Junge",
+    score: 96
+  },
+  {
+    firstName: "Rob",
+    lastName: "Vera",
+    score: 88
+  },
+  {
+    firstName: "Alice",
+    lastName: "Geary",
+    score: 96
+  }
+];
 
 describe("general app requirements", () => {
   it("Must be written in react", () => {
@@ -61,8 +79,12 @@ describe("form features", () => {
   });
 
   describe("actions", () => {
-    it("should update the state when it submits", () => {});
+    it("should update the state when the form submits", () => {});
     it("should delete a user when requested", () => {});
+    it("should sort players by score then by last name", () => {
+      const sortedPlayers = sortPlayers(samplePlayers);
+      expect(sortedPlayers).toEqual([]);
+    });
   });
 
   // In a real-world scenario, we would have an integration test

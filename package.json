@@ -26,6 +26,7 @@
     "jest-localstorage-mock": "^2.2.0"
   },
   "dependencies": {
+    "array-sort": "^1.0.0",
     "parcel-bundler": "^1.9.7",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"

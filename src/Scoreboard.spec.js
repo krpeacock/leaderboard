@@ -6,7 +6,7 @@ Enzyme.configure({
 });
 
 import Scoreboard from "./Scoreboard";
-const samplePlayers = [
+export const samplePlayers = [
   {
     firstName: "Alice",
     lastName: "Geary",

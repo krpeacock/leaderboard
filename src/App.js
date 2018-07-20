@@ -1,5 +1,10 @@
 import React from "react";
 import Scoreboard from "./Scoreboard";
+import arraySort from "array-sort";
+
+export const sortPlayers = players => {
+  return arraySort(players, ["score", "lastName"]);
+};
 
 export default class App extends React.Component {
   constructor(props) {
@@ -12,9 +17,13 @@ export default class App extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
     const { players, firstName, lastName, score } = this.state;
+    const sortedPlayers = sortPlayers([
+      ...this.state.players,
+      { firstName, lastName, score }
+    ]);
     this.setState(
       {
-        players: [...this.state.players, { firstName, lastName, score }],
+        players: sortedPlayers,
         firstName: "",
         lastName: "",
         score: 0
@@ -37,26 +46,40 @@ export default class App extends React.Component {
         return alert("only use numbers!");
       }
       value = +value;
+      if (value > 100) {
+        return alert("the score only goes to 100!");
+      }
     }
     this.setState({ [id]: value });
   }
 
+  deletePlayer(index) {
+    const remainingPlayers = this.state.players.filter((player, idx) => {
+      return index !== idx;
+    });
+    this.setState({ players: remainingPlayers }, () => {
+      sessionStorage.setItem("players", JSON.stringify(this.state.players));
+      // Code to update server goes here
+    });
+  }
+
   render() {
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    const handleChange = this.handleChange.bind(this);
+    const handleSubmit = this.handleSubmit.bind(this);
+    const deletePlayer = this.deletePlayer.bind(this);
     return (
       <div>
-        <Scoreboard players={this.state.players} />
-        <form id="leaderboard-form" onSubmit={this.handleSubmit}>
-          <label htmlFor="firstName" onChange={this.handleChange}>
+        <Scoreboard players={this.state.players} deletePlayer={deletePlayer} />
+        <form id="leaderboard-form" onSubmit={handleSubmit}>
+          <label htmlFor="firstName" onChange={handleChange}>
             First Name
             <input type="text" id="firstName" value={this.state.firstName} />
           </label>
-          <label htmlFor="lastName" onChange={this.handleChange}>
+          <label htmlFor="lastName" onChange={handleChange}>
             Last Name
             <input type="text" id="lastName" value={this.state.lastName} />
           </label>
-          <label htmlFor="score" onChange={this.handleChange}>
+          <label htmlFor="score" onChange={handleChange}>
             Score
             <input type="text" id="score" value={this.state.score} />
           </label>
