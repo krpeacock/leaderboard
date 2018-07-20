@@ -7,7 +7,6 @@ Enzyme.configure({
 
 import App, { sortPlayers } from "./App";
 import Scoreboard from "./Scoreboard";
-import samplePlayers from "./Scoreboard.spec";
 const sessionStorage = {
   get: () => ""
 };
@@ -43,6 +42,7 @@ describe("general app requirements", () => {
   });
   it("should render a form", () => {
     const wrapper = shallow(<App />);
+    wrapper.setState({ addingPlayer: true });
     const form = wrapper.find("form");
     expect(form.length).toEqual(1);
   });
@@ -56,34 +56,53 @@ describe("form features", () => {
   describe("rendering", () => {
     it("should include a firstName field", () => {
       const wrapper = shallow(<App />);
+      wrapper.setState({ addingPlayer: true });
       const form = wrapper.children("form");
       expect(form.contains(<input type="text" id="firstName" />)).toEqual(true);
     });
     it("should include a lastName field", () => {
       const wrapper = shallow(<App />);
+      wrapper.setState({ addingPlayer: true });
       const form = wrapper.children("form");
       expect(form.contains(<input type="text" id="lastName" />)).toEqual(true);
     });
     it("should include a score field", () => {
       const wrapper = shallow(<App />);
+      wrapper.setState({ addingPlayer: true });
       const form = wrapper.children("form");
       expect(form.contains(<input type="text" id="score" />)).toEqual(true);
     });
     it("should have a submit button", () => {
       const wrapper = shallow(<App />);
+      wrapper.setState({ addingPlayer: true });
+      wrapper.setState({ addingPlayer: true });
       const form = wrapper.children("form");
-      const button = wrapper.find("button");
+      const button = wrapper.find("button[type='submit']");
       expect(button.length).toEqual(1);
       expect(button.text()).toEqual("submit");
     });
   });
 
   describe("actions", () => {
-    it("should update the state when the form submits", () => {});
-    it("should delete a user when requested", () => {});
     it("should sort players by score then by last name", () => {
       const sortedPlayers = sortPlayers(samplePlayers);
-      expect(sortedPlayers).toEqual([]);
+      expect(sortedPlayers).toEqual([
+        {
+          firstName: "Rob",
+          lastName: "Vera",
+          score: 88
+        },
+        {
+          firstName: "Alice",
+          lastName: "Geary",
+          score: 96
+        },
+        {
+          firstName: "John",
+          lastName: "Junge",
+          score: 96
+        }
+      ]);
     });
   });
 
