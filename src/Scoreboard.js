@@ -2,7 +2,7 @@ import React from "react";
 
 export default class Scoreboard extends React.Component {
   mapPlayers() {
-    const { players, deletePlayer } = this.props;
+    const { players, deletePlayer, toggleEditingPlayer } = this.props;
     return players.map((player, index) => {
       const { lastName, firstName, score } = player;
       return (
@@ -10,6 +10,7 @@ export default class Scoreboard extends React.Component {
           <td>{`${lastName}, ${firstName}`}</td>
           <td>{`${score}`}</td>
           <td>
+            <button onClick={() => toggleEditingPlayer(index)}>edit</button>
             <button onClick={() => deletePlayer(index)}>delete</button>
           </td>
         </tr>
