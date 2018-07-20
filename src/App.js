@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import Scoreboard from "./Scoreboard";
 import arraySort from "array-sort";
 
@@ -127,14 +127,27 @@ export default class App extends React.Component {
     const toggleAddPlayer = this.toggleAddPlayer.bind(this);
     const deletePlayer = this.deletePlayer.bind(this);
     const toggleEditingPlayer = this.toggleEditingPlayer.bind(this);
+    const {
+      players,
+      addingPlayer,
+      editingPlayer,
+      firstName,
+      lastName,
+      score
+    } = this.state;
     return (
       <div>
+        <h1>Leaderboard</h1>
         <Scoreboard
-          players={this.state.players}
+          players={players}
           deletePlayer={deletePlayer}
+          addingPlayer={addingPlayer}
           toggleEditingPlayer={toggleEditingPlayer}
         />
-        {this.state.addingPlayer || this.state.editingPlayer ? (
+        {addingPlayer || editingPlayer ? (
+          <h3>{addingPlayer ? "Add a score" : "Update a score"}</h3>
+        ) : null}
+        {addingPlayer || editingPlayer ? (
           <form id="leaderboard-form" onSubmit={handleSubmit}>
             <label htmlFor="firstName" onChange={handleChange}>
               First Name
@@ -151,7 +164,9 @@ export default class App extends React.Component {
             <button type="submit">submit</button>
           </form>
         ) : null}
-        <button onClick={toggleAddPlayer}>Add Score</button>
+        <button onClick={toggleAddPlayer} disabled={editingPlayer}>
+          {addingPlayer ? "Cancel" : "Add player"}
+        </button>
       </div>
     );
   }
