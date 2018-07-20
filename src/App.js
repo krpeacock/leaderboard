@@ -1,34 +1,29 @@
 import React, { Fragment } from "react";
 import Scoreboard from "./Scoreboard";
-import arraySort from "array-sort";
-
-export const sortPlayers = players => {
-  return arraySort(players, ["score", "lastName"]);
-};
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-const parseSessionStorage = () => {
-  let parsed;
-  if (sessionStorage.getItem("players") === "undefined") {
-    sessionStorage.removeItem("players");
-  } else {
-    parsed = JSON.parse(sessionStorage.getItem("players"));
-  }
-  if (Array.isArray(parsed)) return parsed;
-  return [];
-};
+import {
+  sortPlayers,
+  capitalizeFirstLetter,
+  parseSessionStorage,
+  setSessionStorage
+} from "./helpers";
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       players: parseSessionStorage(),
+      firstName: "",
+      lastName: "",
+      score: 0,
       addingPlayer: false
     };
   }
+
+  /* 
+    Re-using one form to edit or add players
+    I got fairly far in before realizing that editing was a requirement,
+    otherwise I probably would have used two separate forms.
+  */
 
   handleSubmit(e) {
     e.preventDefault();
@@ -40,6 +35,9 @@ export default class App extends React.Component {
       addingPlayer,
       editPlayerIndex
     } = this.state;
+
+    if (!firstName || !lastName) return alert("Please fill out all fields");
+
     let sortedPlayers;
     if (addingPlayer) {
       sortedPlayers = sortPlayers([
@@ -48,28 +46,15 @@ export default class App extends React.Component {
       ]);
     } else {
       const playerToEdit = players[editPlayerIndex];
-      sortedPlayers = this.editPlayer(editPlayerIndex, {
+      return this.editPlayer(editPlayerIndex, {
         firstName,
         lastName,
         score
       });
     }
-    this.setState(
-      {
-        players: sortedPlayers,
-        firstName: "",
-        lastName: "",
-        score: 0,
-        addingPlayer: false,
-        editingPlayer: false,
-        editPlayerIndex: null
-      },
-      () => {
-        sessionStorage.setItem("players", JSON.stringify(this.state.players));
-        // Code to update server goes here
-      }
-    );
+    this.updatePlayers(sortedPlayers);
   }
+
   handleChange(e) {
     e.preventDefault();
     let { id, value } = e.target;
@@ -91,21 +76,42 @@ export default class App extends React.Component {
     this.setState({ [id]: value });
   }
 
+  /*  
+    We are only using index because this is a simple data model,
+    held in Memory. A production version would use unique id's, managed 
+    by the server 
+  */
   editPlayer(index, updatedPlayer) {
     let players = [...this.state.players];
     players.splice(index, 1, updatedPlayer);
-    return sortPlayers(players);
+    this.updatePlayers(sortPlayers(players));
   }
 
   deletePlayer(index) {
     const remainingPlayers = this.state.players.filter((player, idx) => {
       return index !== idx;
     });
-    this.setState({ players: remainingPlayers }, () => {
-      sessionStorage.setItem("players", JSON.stringify(this.state.players));
-      // Code to update server goes here
-    });
+    this.updatePlayers(remainingPlayers);
   }
+
+  updatePlayers(sortedPlayers) {
+    this.setState(
+      {
+        players: sortedPlayers,
+        firstName: "",
+        lastName: "",
+        score: 0,
+        addingPlayer: false,
+        editingPlayer: false,
+        editPlayerIndex: null
+      },
+      () => {
+        setSessionStorage(this.state.players);
+        // Code to update server goes here
+      }
+    );
+  }
+
   toggleAddPlayer() {
     this.setState({ addingPlayer: !this.state.addingPlayer });
   }
@@ -122,11 +128,12 @@ export default class App extends React.Component {
   }
 
   render() {
-    const handleChange = this.handleChange.bind(this);
-    const handleSubmit = this.handleSubmit.bind(this);
-    const toggleAddPlayer = this.toggleAddPlayer.bind(this);
-    const deletePlayer = this.deletePlayer.bind(this);
-    const toggleEditingPlayer = this.toggleEditingPlayer.bind(this);
+    const handleChange = this.handleChange.bind(this),
+      handleSubmit = this.handleSubmit.bind(this),
+      toggleAddPlayer = this.toggleAddPlayer.bind(this),
+      deletePlayer = this.deletePlayer.bind(this),
+      toggleEditingPlayer = this.toggleEditingPlayer.bind(this);
+
     const {
       players,
       addingPlayer,
@@ -147,6 +154,8 @@ export default class App extends React.Component {
         {addingPlayer || editingPlayer ? (
           <h3>{addingPlayer ? "Add a score" : "Update a score"}</h3>
         ) : null}
+        {/* In a production scenario, this form would likely be a higher-order
+         component that uses the React Context to control its inputs */}
         {addingPlayer || editingPlayer ? (
           <form id="leaderboard-form" onSubmit={handleSubmit}>
             <label htmlFor="firstName" onChange={handleChange}>

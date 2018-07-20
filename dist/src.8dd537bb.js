@@ -20363,13 +20363,51 @@ function flatten(arr) {
  */
 
 module.exports = arraySort;
-},{"default-compare":"node_modules/default-compare/index.js","kind-of":"node_modules/array-sort/node_modules/kind-of/index.js","get-value":"node_modules/get-value/index.js"}],"src/App.js":[function(require,module,exports) {
+},{"default-compare":"node_modules/default-compare/index.js","kind-of":"node_modules/array-sort/node_modules/kind-of/index.js","get-value":"node_modules/get-value/index.js"}],"src/helpers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sortPlayers = undefined;
+exports.setSessionStorage = exports.parseSessionStorage = exports.capitalizeFirstLetter = exports.sortPlayers = undefined;
+
+var _arraySort = require("array-sort");
+
+var _arraySort2 = _interopRequireDefault(_arraySort);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var sortPlayers = exports.sortPlayers = function sortPlayers(players) {
+  // sorts by ascending by default
+  return (0, _arraySort2.default)(players, ["score", "lastName"]);
+};
+
+var capitalizeFirstLetter = exports.capitalizeFirstLetter = function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+var parseSessionStorage = exports.parseSessionStorage = function parseSessionStorage() {
+  var parsed = void 0;
+
+  //   Session storage gets corrupted sometimes, so we check it
+  if (sessionStorage.getItem("players") === "undefined") {
+    sessionStorage.removeItem("players");
+  } else {
+    parsed = JSON.parse(sessionStorage.getItem("players"));
+  }
+  if (Array.isArray(parsed)) return parsed;
+  return [];
+};
+
+var setSessionStorage = exports.setSessionStorage = function setSessionStorage(players) {
+  sessionStorage.setItem("players", JSON.stringify(players));
+};
+},{"array-sort":"node_modules/array-sort/index.js"}],"src/App.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -20381,9 +20419,7 @@ var _Scoreboard = require("./Scoreboard");
 
 var _Scoreboard2 = _interopRequireDefault(_Scoreboard);
 
-var _arraySort = require("array-sort");
-
-var _arraySort2 = _interopRequireDefault(_arraySort);
+var _helpers = require("./helpers");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20397,25 +20433,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var sortPlayers = exports.sortPlayers = function sortPlayers(players) {
-  return (0, _arraySort2.default)(players, ["score", "lastName"]);
-};
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-var parseSessionStorage = function parseSessionStorage() {
-  var parsed = void 0;
-  if (sessionStorage.getItem("players") === "undefined") {
-    sessionStorage.removeItem("players");
-  } else {
-    parsed = JSON.parse(sessionStorage.getItem("players"));
-  }
-  if (Array.isArray(parsed)) return parsed;
-  return [];
-};
-
 var App = function (_React$Component) {
   _inherits(App, _React$Component);
 
@@ -20425,17 +20442,24 @@ var App = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
     _this.state = {
-      players: parseSessionStorage(),
+      players: (0, _helpers.parseSessionStorage)(),
+      firstName: "",
+      lastName: "",
+      score: 0,
       addingPlayer: false
     };
     return _this;
   }
 
+  /* 
+    Re-using one form to edit or add players
+    I got fairly far in before realizing that editing was a requirement,
+    otherwise I probably would have used two separate forms.
+  */
+
   _createClass(App, [{
     key: "handleSubmit",
     value: function handleSubmit(e) {
-      var _this2 = this;
-
       e.preventDefault();
       var _state = this.state,
           players = _state.players,
@@ -20445,29 +20469,21 @@ var App = function (_React$Component) {
           addingPlayer = _state.addingPlayer,
           editPlayerIndex = _state.editPlayerIndex;
 
+
+      if (!firstName || !lastName) return alert("Please fill out all fields");
+
       var sortedPlayers = void 0;
       if (addingPlayer) {
-        sortedPlayers = sortPlayers([].concat(_toConsumableArray(this.state.players), [{ firstName: firstName, lastName: lastName, score: score }]));
+        sortedPlayers = (0, _helpers.sortPlayers)([].concat(_toConsumableArray(this.state.players), [{ firstName: firstName, lastName: lastName, score: score }]));
       } else {
         var playerToEdit = players[editPlayerIndex];
-        sortedPlayers = this.editPlayer(editPlayerIndex, {
+        return this.editPlayer(editPlayerIndex, {
           firstName: firstName,
           lastName: lastName,
           score: score
         });
       }
-      this.setState({
-        players: sortedPlayers,
-        firstName: "",
-        lastName: "",
-        score: 0,
-        addingPlayer: false,
-        editingPlayer: false,
-        editPlayerIndex: null
-      }, function () {
-        sessionStorage.setItem("players", JSON.stringify(_this2.state.players));
-        // Code to update server goes here
-      });
+      this.updatePlayers(sortedPlayers);
     }
   }, {
     key: "handleChange",
@@ -20490,27 +20506,47 @@ var App = function (_React$Component) {
           return alert("the score only goes to 100!");
         }
       } else {
-        value = capitalizeFirstLetter(value);
+        value = (0, _helpers.capitalizeFirstLetter)(value);
       }
       this.setState(_defineProperty({}, id, value));
     }
+
+    /*  
+      We are only using index because this is a simple data model,
+      held in Memory. A production version would use unique id's, managed 
+      by the server 
+    */
+
   }, {
     key: "editPlayer",
     value: function editPlayer(index, updatedPlayer) {
       var players = [].concat(_toConsumableArray(this.state.players));
       players.splice(index, 1, updatedPlayer);
-      return sortPlayers(players);
+      this.updatePlayers((0, _helpers.sortPlayers)(players));
     }
   }, {
     key: "deletePlayer",
     value: function deletePlayer(index) {
-      var _this3 = this;
-
       var remainingPlayers = this.state.players.filter(function (player, idx) {
         return index !== idx;
       });
-      this.setState({ players: remainingPlayers }, function () {
-        sessionStorage.setItem("players", JSON.stringify(_this3.state.players));
+      this.updatePlayers(remainingPlayers);
+    }
+  }, {
+    key: "updatePlayers",
+    value: function updatePlayers(sortedPlayers) {
+      var _this2 = this;
+
+      this.setState({
+        players: sortedPlayers,
+        firstName: "",
+        lastName: "",
+        score: 0,
+        addingPlayer: false,
+        editingPlayer: false,
+        editPlayerIndex: null
+      }, function () {
+        (0, _helpers.setSessionStorage)(_this2.state.players);
         // Code to update server goes here
       });
     }
@@ -20538,11 +20574,12 @@ var App = function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var handleChange = this.handleChange.bind(this);
-      var handleSubmit = this.handleSubmit.bind(this);
-      var toggleAddPlayer = this.toggleAddPlayer.bind(this);
-      var deletePlayer = this.deletePlayer.bind(this);
-      var toggleEditingPlayer = this.toggleEditingPlayer.bind(this);
+      var handleChange = this.handleChange.bind(this),
+          handleSubmit = this.handleSubmit.bind(this),
+          toggleAddPlayer = this.toggleAddPlayer.bind(this),
+          deletePlayer = this.deletePlayer.bind(this),
+          toggleEditingPlayer = this.toggleEditingPlayer.bind(this);
+
       var _state2 = this.state,
           players = _state2.players,
           addingPlayer = _state2.addingPlayer,
@@ -20610,24 +20647,24 @@ var App = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = App;
-},{"react":"node_modules/react/index.js","./Scoreboard":"src/Scoreboard.js","array-sort":"node_modules/array-sort/index.js"}],"src/index.js":[function(require,module,exports) {
-'use strict';
+},{"react":"node_modules/react/index.js","./Scoreboard":"src/Scoreboard.js","./helpers":"src/helpers.js"}],"src/index.js":[function(require,module,exports) {
+"use strict";
 
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = require('react-dom');
+var _reactDom = require("react-dom");
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _App = require('./App');
+var _App = require("./App");
 
 var _App2 = _interopRequireDefault(_App);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(_App2.default, null), document.getElementById('root'));
+_reactDom2.default.render(_react2.default.createElement(_App2.default, null), document.getElementById("root"));
 },{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js","./App":"src/App.js"}],"../../.nvm/versions/node/v8.9.4/lib/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -20657,7 +20694,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61829' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52800' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
